@@ -77,5 +77,18 @@ namespace EtlService.Configuration
             string jsonString = File.ReadAllText(configurationFilePath);
             configurationModel = JsonSerializer.Deserialize<ConfigurationModel>(jsonString);
         }
+
+        public bool ResetConfiguration()
+        {
+            try
+            {
+                ValidateIfConfigFileCorrect();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }

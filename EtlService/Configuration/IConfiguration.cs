@@ -11,5 +11,6 @@ namespace EtlService.Configuration
         void ValidateConfiguration();
         string GetSourceFolderPath();
         string GetOutputFolderPath();
+        bool ResetConfiguration();
     }
 }

@@ -1,2 +1,10 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿using EtlService;
+using EtlService.Configuration;
+
+Directory.SetCurrentDirectory("./../../../../");
+
+IConfiguration configuration = new Configuration("config.json");
+configuration.ValidateConfiguration();
+
+var app = new ConsoleApplication(configuration);
+app.Run();
