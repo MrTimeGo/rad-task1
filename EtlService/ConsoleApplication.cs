@@ -47,14 +47,6 @@ namespace EtlService
         }
         private void Start()
         {
-            var dummy = async (CancellationToken token) =>
-            {
-                while (!token.IsCancellationRequested)
-                {
-                    Console.WriteLine("Running");
-                    await Task.Delay(2000);
-                }
-            };
 
             if (cancellationTokenSource != null && !cancellationTokenSource.IsCancellationRequested)
             {
@@ -62,8 +54,9 @@ namespace EtlService
                 return;
             }
             cancellationTokenSource = new CancellationTokenSource();
+            var controller = new FlowController(configuration);
+            Task.Run(() => controller.StartService(cancellationTokenSource.Token));
             Console.WriteLine("Service started");
-            Task.Run(() => dummy(cancellationTokenSource.Token));
         }
 
         private void Stop()
@@ -77,7 +70,6 @@ namespace EtlService
             {
                 Console.WriteLine("Service can't be stopped");
             }
-            
         }
 
         private void Reload()
@@ -117,7 +109,7 @@ namespace EtlService
             {
                 "Commands:",
                 "start - start service",
-                "restart - restart service with updated configuration",
+                "reload - restart service with updated configuration",
                 "stop - stop service",
                 "exit - close application"
             };
