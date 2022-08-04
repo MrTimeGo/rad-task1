@@ -10,7 +10,7 @@ namespace EtlService.DataReaders
 {
     internal class TxtDataReader : DataReader
     {
-        public TxtDataReader(FileStream fileStream) : base(fileStream)
+        public TxtDataReader(string filePath) : base(filePath)
         {
         }
 

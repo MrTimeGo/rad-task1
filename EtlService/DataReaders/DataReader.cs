@@ -3,6 +3,7 @@ using CsvHelper.Configuration;
 using EtlService.Models;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,11 +14,11 @@ namespace EtlService.DataReaders
     {
         public int InvalidLinesNumber { get; set; }
 
-        protected readonly FileStream fileStream;
+        protected readonly string filePath;
 
-        protected DataReader(FileStream fileStream)
+        protected DataReader(string filePath)
         {
-            this.fileStream = fileStream;
+            this.filePath = filePath;
         }
 
         public List<RawData> ReadRawData()
@@ -26,7 +27,7 @@ namespace EtlService.DataReaders
 
             List<RawData> data = new List<RawData>();
 
-            using var reader = new StreamReader(fileStream);
+            using var reader = new StreamReader(filePath);
             using var csv = new CsvReader(reader, config);
             if (config.HasHeaderRecord)
             {
@@ -43,7 +44,7 @@ namespace EtlService.DataReaders
                         LastName = csv.GetField<string>(1),
                         Address = csv.GetField<string>(2),
                         Payment = csv.GetField<decimal>(3),
-                        Date = DateOnly.ParseExact(csv.GetField<string>(4), "yyyy-dd-MM"),
+                        Date = DateTime.ParseExact(csv.GetField<string>(4), "yyyy-dd-MM", CultureInfo.InvariantCulture),
                         AccontNumber = csv.GetField<long>(5),
                         Service = csv.GetField<string>(6),
                     };

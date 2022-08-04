@@ -20,26 +20,52 @@ namespace EtlService
 
         public void StartService(CancellationToken cancellationToken)
         {
+            List<Task> tasks = new List<Task>();
             while (!cancellationToken.IsCancellationRequested)
             {
-                foreach(var filePath in Directory.GetFiles(configuration.GetSourceFolderPath()))
+                tasks.Clear();
+                try
                 {
-                    ProcessFile(filePath);
+                    foreach (var filePath in Directory.GetFiles(configuration.GetSourceFolderPath(), "*.txt"))
+                    {
+                        //tasks.Add(Task.Run(() => ProcessFile(filePath, ExtractTxt), cancellationToken));
+                        ProcessFile(filePath, ExtractTxt);
+                    }
+
+                    foreach (var filePath in Directory.GetFiles(configuration.GetSourceFolderPath(), "*.csv"))
+                    {
+                        //tasks.Add(Task.Run(() => ProcessFile(filePath, ExtractCsv), cancellationToken));
+                        ProcessFile(filePath, ExtractCsv);
+                    }
+                    Task.WaitAll(tasks.ToArray());
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
                 }
             }
         }
 
-        private void ProcessFile(string filePath)
+        private void ProcessFile(string filePath, Func<string, List<RawData>> extractMethod)
         {
-            using(var stream = File.OpenRead(filePath))
-            {
-                DataReader reader = new CsvDataReader(stream);
-                var data = reader.ReadRawData();
-                Console.WriteLine(reader.InvalidLinesNumber);
-            }
+            var rawData = extractMethod(filePath);
+            var transformedData = DataTransformer.Transform(rawData);
+            var saver = new DataSaver(configuration);
+            saver.SaveData(transformedData);
+
             File.Delete(filePath);
         }
 
-        
+        private List<RawData> ExtractTxt(string filePath)
+        {
+            DataReader reader = new TxtDataReader(filePath);
+            return reader.ReadRawData();
+        }
+
+        private List<RawData> ExtractCsv(string filePath)
+        {
+            DataReader reader = new CsvDataReader(filePath);
+            return reader.ReadRawData();
+        }
     }
 }

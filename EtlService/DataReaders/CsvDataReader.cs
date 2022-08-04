@@ -7,7 +7,7 @@ namespace EtlService.DataReaders
 {
     internal class CsvDataReader : DataReader
     {
-        public CsvDataReader(FileStream fileStream) : base(fileStream)
+        public CsvDataReader(string filePath) : base(filePath)
         {
         }
         protected override CsvConfiguration GetCsvConfiguration()

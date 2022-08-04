@@ -13,7 +13,7 @@ namespace EtlService.Models
         public string LastName { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
         public decimal Payment { get; set; }
-        public DateOnly Date { get; set; }
+        public DateTime Date { get; set; }
         public long AccontNumber { get; set; }
         public string Service { get; set; } = string.Empty;
 
