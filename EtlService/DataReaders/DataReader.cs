@@ -12,6 +12,7 @@ namespace EtlService.DataReaders
 {
     internal abstract class DataReader
     {
+        public int AllLines { get; set; }
         public int InvalidLinesNumber { get; set; }
 
         protected readonly string filePath;
@@ -59,6 +60,7 @@ namespace EtlService.DataReaders
                 {
                     InvalidLinesNumber++;
                 }
+                AllLines++;
             }
             return data;
         }

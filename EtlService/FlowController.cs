@@ -13,6 +13,10 @@ namespace EtlService
     {
         private readonly IConfiguration configuration;
 
+        private DateTime today = DateTime.Today;
+
+        private MetaFileModel metaFile = new MetaFileModel();
+
         public FlowController(IConfiguration configuration)
         {
             this.configuration = configuration;
@@ -37,12 +41,24 @@ namespace EtlService
                         //tasks.Add(Task.Run(() => ProcessFile(filePath, ExtractCsv), cancellationToken));
                         ProcessFile(filePath, ExtractCsv);
                     }
-                    Task.WaitAll(tasks.ToArray());
+                    Task.WaitAll(tasks.ToArray(), cancellationToken);
+                    DumpToMetaFileIfDateChanged();
                 }
                 catch (OperationCanceledException)
                 {
                     break;
                 }
+            }
+        }
+
+        private void DumpToMetaFileIfDateChanged()
+        {
+            if(DateTime.Today != today)
+            {
+                MetaFileProcessor metaFileProcessor = new MetaFileProcessor(configuration);
+                metaFileProcessor.DumpToMetaFile(today, metaFile);
+                metaFile = new MetaFileModel();
+                today = DateTime.Today;
             }
         }
 
@@ -56,16 +72,31 @@ namespace EtlService
             File.Delete(filePath);
         }
 
+        private void GetMetaDataFromProcessedFile(DataReader reader, string filePath)
+        {
+            metaFile.ParsedFiles += 1;
+            metaFile.ParsedLines += reader.AllLines;
+            metaFile.FoundErrors += reader.InvalidLinesNumber;
+            if(reader.InvalidLinesNumber != 0)
+            {
+                metaFile.InvalidFiles.Add(filePath);
+            }
+        }
+
         private List<RawData> ExtractTxt(string filePath)
         {
             DataReader reader = new TxtDataReader(filePath);
-            return reader.ReadRawData();
+            var data = reader.ReadRawData();
+            GetMetaDataFromProcessedFile(reader, filePath);
+            return data;
         }
 
         private List<RawData> ExtractCsv(string filePath)
         {
             DataReader reader = new CsvDataReader(filePath);
-            return reader.ReadRawData();
+            var data =  reader.ReadRawData();
+            GetMetaDataFromProcessedFile(reader, filePath);
+            return data;
         }
     }
 }
