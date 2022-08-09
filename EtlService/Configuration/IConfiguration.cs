@@ -12,5 +12,6 @@ namespace EtlService.Configuration
         string GetSourceFolderPath();
         string GetOutputFolderPath();
         bool ResetConfiguration();
+        void CreateIfDoesntExistEmptyConfigFile();
     }
 }

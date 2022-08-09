@@ -24,6 +24,7 @@ namespace EtlService.Configuration
             {
                 throw new NullReferenceException("Configuration is null");
             }
+            CreateFolderIfDoesntExist(configurationModel.OutputFolderPath);
             return configurationModel.OutputFolderPath;
         }
 
@@ -33,7 +34,16 @@ namespace EtlService.Configuration
             {
                 throw new NullReferenceException("Configuration is null");
             }
+            CreateFolderIfDoesntExist(configurationModel.SourceFolderPath);
             return configurationModel.SourceFolderPath;
+        }
+
+        private void CreateFolderIfDoesntExist(string path)
+        {
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
         }
 
         public void ValidateConfiguration()
@@ -88,6 +98,20 @@ namespace EtlService.Configuration
             catch
             {
                 return false;
+            }
+        }
+
+        public void CreateIfDoesntExistEmptyConfigFile()
+        {
+            if (!File.Exists(configurationFilePath))
+            {
+                var file = File.Create(configurationFilePath);
+                var options = new JsonSerializerOptions()
+                {
+                    WriteIndented = true
+                };
+                JsonSerializer.Serialize(file, new ConfigurationModel(), typeof(ConfigurationModel), options);
+                file.Close();
             }
         }
     }

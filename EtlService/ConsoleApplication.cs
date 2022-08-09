@@ -12,9 +12,10 @@ namespace EtlService
         private readonly IConfiguration configuration;
         private CancellationTokenSource cancellationTokenSource;
 
-        public ConsoleApplication(IConfiguration configuration)
+        public ConsoleApplication()
         {
-            this.configuration = configuration;
+            configuration = new Configuration.Configuration("./config.json");
+            configuration.CreateIfDoesntExistEmptyConfigFile();
         }
         public void Run()
         {
@@ -47,7 +48,11 @@ namespace EtlService
         }
         private void Start()
         {
-
+            bool result = configuration.ResetConfiguration();
+            if (!result)
+            {
+                Console.WriteLine("Configuration laoding failed");
+            }
             if (cancellationTokenSource != null && !cancellationTokenSource.IsCancellationRequested)
             {
                 Console.WriteLine("Service has already started");

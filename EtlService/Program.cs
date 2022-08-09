@@ -3,8 +3,5 @@ using EtlService.Configuration;
 
 Directory.SetCurrentDirectory("./../../../../");
 
-IConfiguration configuration = new Configuration("config.json");
-configuration.ValidateConfiguration();
-
-var app = new ConsoleApplication(configuration);
+var app = new ConsoleApplication();
 app.Run();

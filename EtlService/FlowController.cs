@@ -1,11 +1,6 @@
 ﻿using EtlService.Configuration;
 using EtlService.DataReaders;
 using EtlService.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EtlService
 {
@@ -32,14 +27,18 @@ namespace EtlService
                 {
                     foreach (var filePath in Directory.GetFiles(configuration.GetSourceFolderPath(), "*.txt"))
                     {
-                        //tasks.Add(Task.Run(() => ProcessFile(filePath, ExtractTxt), cancellationToken));
-                        ProcessFile(filePath, ExtractTxt);
+                        if (FileCanBeAccessed(filePath))
+                        {
+                            tasks.Add(Task.Run(() => ProcessFile(filePath, ExtractTxt), cancellationToken));
+                        }
                     }
 
                     foreach (var filePath in Directory.GetFiles(configuration.GetSourceFolderPath(), "*.csv"))
                     {
-                        //tasks.Add(Task.Run(() => ProcessFile(filePath, ExtractCsv), cancellationToken));
-                        ProcessFile(filePath, ExtractCsv);
+                        if (FileCanBeAccessed(filePath))
+                        {
+                            tasks.Add(Task.Run(() => ProcessFile(filePath, ExtractCsv), cancellationToken));
+                        }
                     }
                     Task.WaitAll(tasks.ToArray(), cancellationToken);
                     DumpToMetaFileIfDateChanged();
@@ -53,7 +52,7 @@ namespace EtlService
 
         private void DumpToMetaFileIfDateChanged()
         {
-            if(DateTime.Today != today)
+            if (DateTime.Today != today)
             {
                 MetaFileProcessor metaFileProcessor = new MetaFileProcessor(configuration);
                 metaFileProcessor.DumpToMetaFile(today, metaFile);
@@ -77,7 +76,7 @@ namespace EtlService
             metaFile.ParsedFiles += 1;
             metaFile.ParsedLines += reader.AllLines;
             metaFile.FoundErrors += reader.InvalidLinesNumber;
-            if(reader.InvalidLinesNumber != 0)
+            if (reader.InvalidLinesNumber != 0)
             {
                 metaFile.InvalidFiles.Add(filePath);
             }
@@ -94,9 +93,22 @@ namespace EtlService
         private List<RawData> ExtractCsv(string filePath)
         {
             DataReader reader = new CsvDataReader(filePath);
-            var data =  reader.ReadRawData();
+            var data = reader.ReadRawData();
             GetMetaDataFromProcessedFile(reader, filePath);
             return data;
+        }
+
+        private bool FileCanBeAccessed(string filepath)
+        {
+            try
+            {
+                File.OpenRead(filepath).Close();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
